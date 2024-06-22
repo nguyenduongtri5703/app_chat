@@ -4,15 +4,26 @@ import './App.css';
 import List from "./component/list/List";
 import Detail from "./component/detail/Detail";
 import Converse from "./component/chat/Converse";
+import Login from "./component/login/Login";
 
 function App() {
-  return (
-    <div className="container">
-      <List/>
-       <Converse/>
-      <Detail/>
-    </div>
-  );
+    const user = false;
+
+    return (
+        <div className="container">
+            {
+                user ? (
+                    <>
+                        <List/>
+                        <Converse/>
+                        <Detail/>
+                    </>
+                ) : (
+                    <Login/>
+                )
+            }
+        </div>
+    );
 }
 
 export default App;
