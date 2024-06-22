@@ -75,6 +75,7 @@ const Detail = () => {
                     </div>
                 </div>
                 <button>Chặn</button>
+                <button className="logout">Đăng xuất</button>
             </div>
         </div>
     )
