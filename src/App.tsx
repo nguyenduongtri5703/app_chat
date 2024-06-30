@@ -1,5 +1,4 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useState} from 'react';
 import './App.css';
 import List from "./component/list/List";
 import Detail from "./component/detail/Detail";
@@ -8,8 +7,9 @@ import Login from "./component/login/Login";
 import Notification from "./component/notification/Notification";
 
 function App() {
-    const user = true;
+    const [user, setUser] = useState(false);
 
+    // @ts-ignore
     return (
         <div className="container">
             {
@@ -20,7 +20,7 @@ function App() {
                         <Detail/>
                     </>
                 ) : (
-                    <Login/>
+                    <Login setUser={setUser}/>
                 )
             }
             <Notification/>
