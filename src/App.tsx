@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import List from "./component/list/List";
 import Detail from "./component/detail/Detail";
@@ -7,23 +7,24 @@ import Login from "./component/login/Login";
 import Notification from "./component/notification/Notification";
 
 function App() {
-    const [user, setUser] = useState(false);
+    const [user, setUser] = useState({ isLoggedIn: false, credentials: null });
 
-    // @ts-ignore
+    console.log('App component user state:', user);
+
     return (
         <div className="container">
             {
-                user ? (
+                user.isLoggedIn ? (
                     <>
-                        <List/>
-                        <Converse/>
-                        <Detail/>
+                        <List user={user.credentials} />
+                        <Converse />
+                        <Detail />
                     </>
                 ) : (
-                    <Login setUser={setUser}/>
+                    <Login setUser={setUser} />
                 )
             }
-            <Notification/>
+            <Notification />
         </div>
     );
 }
