@@ -1,5 +1,11 @@
 import "./detail.css"
-const Detail = () => {
+import WebSocketService from "../../WebSocketService";
+const Detail = ({ setUser }) => {
+    const handleLogout = () => {
+        setUser({ isLoggedIn: false, credentials: null });
+        localStorage.removeItem('user');
+        WebSocketService.close();
+    };
     return (
         <div className='detail'>
             <div className="user">
@@ -75,7 +81,7 @@ const Detail = () => {
                     </div>
                 </div>
                 <button>Chặn</button>
-                <button className="logout">Đăng xuất</button>
+                <button className="logout" onClick={handleLogout}>Đăng xuất</button>
             </div>
         </div>
     )
