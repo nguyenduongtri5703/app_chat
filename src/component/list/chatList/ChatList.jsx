@@ -20,10 +20,6 @@ const ChatList = ({ user }) => {
                 event: 'GET_USER_LIST'
             }
         });
-
-        return () => {
-            webSocketService.close();
-        };
     }, []);
 
     return (

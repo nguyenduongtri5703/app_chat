@@ -8,8 +8,6 @@ const Login = ({ setUser }) => {
     const [credentials, setCredentials] = useState({ user: "", pass: "" });
 
     useEffect(() => {
-        WebSocketService.connect('ws://140.238.54.136:8080/chat/chat');
-
         WebSocketService.registerCallback('LOGIN', (data) => {
             console.log('Login response:', data);
             if (data.RE_LOGIN_CODE) {
@@ -22,15 +20,12 @@ const Login = ({ setUser }) => {
                 };
                 console.log('Setting user data:', userData);
                 setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData)); // Save user state in localStorage
                 toast.success("Đăng nhập thành công");
             } else {
                 toast.error("Đăng nhập thất bại");
             }
         });
-
-        return () => {
-            WebSocketService.close();
-        };
     }, [credentials, setUser]);
 
     const handleInputChange = e => {
