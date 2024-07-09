@@ -114,7 +114,7 @@ const ChatList = ({ user }) => {
                     </div>
                 </div>
             ))}
-            {addMode && <AddUser />}
+            {addMode && <AddUser/>}
         </div>
     );
 };

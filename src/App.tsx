@@ -20,7 +20,6 @@ function App() {
         console.log('App component user state:', user);
     }, []);
 
-
     return (
         <div className="container">
             {

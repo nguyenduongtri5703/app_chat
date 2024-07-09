@@ -58,7 +58,6 @@ const Login = ({ setUser }) => {
             }
         });
     };
-
     return (
         <div className='login'>
             <div className="item">
