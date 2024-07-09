@@ -15,10 +15,11 @@ function App() {
         if (savedUser) {
             setUser(JSON.parse(savedUser));
         }
+
+        WebSocketService.connect('ws://140.238.54.136:8080/chat/chat');
+        console.log('App component user state:', user);
     }, []);
 
-    WebSocketService.connect('ws://140.238.54.136:8080/chat/chat');
-    console.log('App component user state:', user);
 
     return (
         <div className="container">
