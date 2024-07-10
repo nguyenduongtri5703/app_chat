@@ -20,7 +20,7 @@ const Login = ({ setUser }) => {
                 };
                 console.log('Setting user data:', userData);
                 setUser(userData);
-                localStorage.setItem('user', JSON.stringify(userData)); // Save user state in localStorage
+                localStorage.setItem('user', JSON.stringify(userData));
                 toast.success("Đăng nhập thành công");
             } else {
                 toast.error("Đăng nhập thất bại");
@@ -58,7 +58,6 @@ const Login = ({ setUser }) => {
             }
         });
     };
-
     return (
         <div className='login'>
             <div className="item">
