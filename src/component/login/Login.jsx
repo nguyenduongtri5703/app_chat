@@ -19,8 +19,9 @@ const Login = ({ setUser }) => {
                         pass: credentials.pass
                     }
                 };
+                console.log('Setting user data:', userData);
                 setUser(userData);
-                localStorage.setItem('user', JSON.stringify(userData));
+                localStorage.setItem('user', JSON.stringify(userData)); // Save user state in localStorage
                 toast.success("Đăng nhập thành công");
             } else {
                 toast.error("Đăng nhập thất bại");
@@ -29,18 +30,12 @@ const Login = ({ setUser }) => {
 
         WebSocketService.registerCallback('REGISTER', (data) => {
             console.log('Register response:', data);
-            if (data.status === 'success') {
+            if (data.status === 'success') {  // kiểm tra xem thành công không
                 toast.success("Đăng ký thành công");
             } else {
                 toast.error("Đăng ký thất bại");
             }
         });
-
-        WebSocketService.connect('ws://140.238.54.136:8080/chat/chat');
-
-        return () => {
-            WebSocketService.close();
-        };
     }, [credentials, registerCredentials, setUser]);
 
     const handleInputChange = e => {

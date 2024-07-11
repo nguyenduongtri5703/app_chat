@@ -11,8 +11,10 @@ const WebSocketService = (() => {
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.status === 'success' || data.status === 'error') {
-                callbacks[data.event](data);
+            if (data.event === 'LOGIN') {
+                handleLoginResponse(data);
+            } else if (data.event === 'REGISTER') {
+                handleRegisterResponse(data);
             }
         };
 
@@ -21,8 +23,22 @@ const WebSocketService = (() => {
         };
 
         socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
+            console.log('WebSocket error', error);
         };
+    };
+
+    const handleLoginResponse = (data) => {
+        if (data.status === 'success') {
+            callbacks[data.event](data.data);
+        } else if (data.status === 'error') {
+            callbacks[data.event](data.mes);
+        }
+    };
+
+    const handleRegisterResponse = (data) => {
+        if (data.status === 'success' || data.status === 'error') {
+            callbacks[data.event](data);
+        }
     };
 
     const registerCallback = (event, callback) => {
@@ -31,21 +47,15 @@ const WebSocketService = (() => {
 
     const sendMessage = (message) => {
         try {
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify(message));
-            } else {
-                console.error('WebSocket is not open. Failed to send message:', message);
-            }
+            socket.send(JSON.stringify(message));
         } catch (error) {
             console.error('Error sending message:', error);
         }
     };
 
     const close = () => {
-        if (socket.readyState === WebSocket.OPEN) {
-            socket.close();
-        }
-    };
+        socket.close();
+    }
 
     return {
         connect,
