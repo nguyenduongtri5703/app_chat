@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import AddUser from "./addUser/addUser";
 import WebSocketService from "../../../WebSocketService";
 
-const ChatList = ({ user }) => {
+const ChatList = ({ user, onUserSelect }) => {
     const [addMode, setAddMode] = useState(false);
     const [userList, setUserList] = useState([]);
     const [messageData, setMessageData] = useState([]);
@@ -106,7 +106,7 @@ const ChatList = ({ user }) => {
                 />
             </div>
             {filteredUserList.map((user, index) => (
-                <div key={index} className="item">
+                <div key={index} className="item" onClick={()=> onUserSelect(user)}>
                     <img src="/avatar.png" alt=""/>
                     <div className="texts">
                         <span>{user.name}</span>
