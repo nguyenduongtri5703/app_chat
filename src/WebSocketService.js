@@ -11,10 +11,8 @@ const WebSocketService = (() => {
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.status == 'success') {
-                callbacks[data.event](data.data);
-            }else if (data.status == 'error'){
-                callbacks[data.event](data.mes);
+            if (data.status === 'success' || data.status === 'error') {
+                callbacks[data.event](data);
             }
         };
 
@@ -23,7 +21,7 @@ const WebSocketService = (() => {
         };
 
         socket.onerror = (error) => {
-            console.log('WebSocket error', error);
+            console.error('WebSocket error:', error);
         };
     };
 
@@ -33,17 +31,21 @@ const WebSocketService = (() => {
 
     const sendMessage = (message) => {
         try {
-            socket.send(JSON.stringify(message));
-            // console.log(message)
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify(message));
+            } else {
+                console.error('WebSocket is not open. Failed to send message:', message);
+            }
         } catch (error) {
             console.error('Error sending message:', error);
         }
     };
 
     const close = () => {
-        socket.onclose();
-    }
-
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.close();
+        }
+    };
 
     return {
         connect,
