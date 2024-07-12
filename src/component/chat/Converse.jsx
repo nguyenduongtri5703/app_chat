@@ -126,7 +126,7 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
           <div className="center">
               {messagesToShow.map((message, index) => (
                   <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
-                      {message.name !== selectedUser.name && (
+                      {message.name === selectedUser.name && (
                           <img src="/avatar.png" alt="" />
                       )}
                       <div className="texts">
