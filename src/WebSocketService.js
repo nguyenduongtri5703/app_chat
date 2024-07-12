@@ -14,9 +14,11 @@ const WebSocketService = (() => {
             if (data.event === 'REGISTER') {
                 handleRegisterResponse(data);
             } else if (data.status == 'success') {
+=======
+            if (callbacks[data.event]) {
                 callbacks[data.event](data.data);
-            }else if (data.status == 'error'){
-                callbacks[data.event](data.mes);
+            } else {
+                console.warn(`No callback registered for event: ${data.event}`);
             }
         };
 

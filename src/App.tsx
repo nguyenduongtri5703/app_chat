@@ -9,6 +9,8 @@ import WebSocketService from "./WebSocketService";
 
 function App() {
     const [user, setUser] = useState({ isLoggedIn: false, credentials: null });
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [messageData, setMessageData] = useState([]);
 
     useEffect(() => {
         const savedUser = localStorage.getItem('user');
@@ -25,8 +27,17 @@ function App() {
             {
                 user.isLoggedIn ? (
                     <>
-                        <List user={user.credentials} />
-                        <Converse />
+                        <List
+                            user={user.credentials}
+                            setSelectedUser={setSelectedUser}
+                            messageData={messageData}
+                            setMessageData={setMessageData}
+                        />
+                        <Converse
+                            selectedUser={selectedUser}
+                            messageData={messageData}
+                            setMessageData={setMessageData}
+                        />
                         <Detail setUser={setUser} />
                     </>
                 ) : (
