@@ -35,13 +35,16 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
                 mes: data.mes,
                 createAt: new Date().toISOString()
             };
-            setMessageData(prev => {
-                const updatedMessages = [newMessage, ...prev];
-                localStorage.setItem("messageData", JSON.stringify(updatedMessages));
-                return updatedMessages;
-            });
+            // Kiểm tra nếu tin nhắn mới là của người dùng đang xem hoặc là người gửi, thì mới cập nhật messageData
+            if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
+                setMessageData(prev => {
+                    const updatedMessages = [newMessage, ...prev];
+                    localStorage.setItem("messageData", JSON.stringify(updatedMessages));
+                    return updatedMessages;
+                });
+            }
         });
-    }, [setMessageData]);
+    }, [setMessageData, selectedUser]);
 
     const formatMessageTime = (timestamp) => {
         const messageDate = new Date(timestamp);
@@ -126,7 +129,7 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
           <div className="center">
               {messagesToShow.map((message, index) => (
                   <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
-                      {message.name !== selectedUser.name && (
+                      {message.name === selectedUser.name && (
                           <img src="/avatar.png" alt="" />
                       )}
                       <div className="texts">
