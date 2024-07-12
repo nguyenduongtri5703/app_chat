@@ -32,7 +32,6 @@ const ChatList = ({ user, onUserSelect }) => {
     // useEffect để register call back and và lấy dữ liệu
     useEffect(() => {
         WebSocketService.registerCallback('GET_USER_LIST', (data) => {
-            console.log('GET_USER_LIST data received:', data);
             setUserList(data);
             localStorage.setItem('userList', JSON.stringify(data)); // Lưu data vào localStorage
 
@@ -70,11 +69,13 @@ const ChatList = ({ user, onUserSelect }) => {
         }
     }, []);
 
+    // Lấy message mới nhất từ người dùng cụ thể
     const getLatestMessageForUser = (userName) => {
         const messagesForUser = messageData.filter(msg => msg.name === userName || msg.to === userName);
 
         if (messagesForUser.length === 0) return '';
 
+        // So sánh ngày gửi tin nhắn giữa các message
         const latestMessage = messagesForUser.reduce((prev, current) => (
             new Date(current.createAt) > new Date(prev.createAt) ? current : prev
         ));
@@ -82,6 +83,7 @@ const ChatList = ({ user, onUserSelect }) => {
         return `${sender}${latestMessage.mes}`;
     };
 
+    // Lọc user khi tìm kiếm
     const filteredUserList = userList.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
@@ -114,7 +116,7 @@ const ChatList = ({ user, onUserSelect }) => {
                     </div>
                 </div>
             ))}
-            {addMode && <AddUser />}
+            {addMode && <AddUser/>}
         </div>
     );
 };
