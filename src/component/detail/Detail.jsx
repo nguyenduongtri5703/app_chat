@@ -1,10 +1,22 @@
 import "./detail.css"
 import WebSocketService from "../../WebSocketService";
+
 const Detail = ({ setUser }) => {
     const handleLogout = () => {
-        setUser({ isLoggedIn: false, credentials: null });
-        localStorage.removeItem('user');
-        WebSocketService.close();
+        // Send the logout message via WebSocket
+        WebSocketService.sendMessage({
+            action: "onchat",
+            data: { event: "LOGOUT" }
+        });
+
+        // Register a callback to handle the logout confirmation
+        WebSocketService.registerCallback('LOGOUT', (data) => {
+            console.log('Logout confirmed:', data);
+            // Proceed with the logout logic
+            setUser({ isLoggedIn: false, credentials: null });
+            localStorage.removeItem('user');
+            WebSocketService.close();
+        });
     };
     return (
         <div className='detail'>

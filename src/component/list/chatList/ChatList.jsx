@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import AddUser from "./addUser/addUser";
 import WebSocketService from "../../../WebSocketService";
 
-const ChatList = ({ user }) => {
+const ChatList = ({ user, onUserSelect }) => {
     const [addMode, setAddMode] = useState(false);
     const [userList, setUserList] = useState([]);
     const [messageData, setMessageData] = useState([]);
@@ -32,6 +32,7 @@ const ChatList = ({ user }) => {
     // useEffect để register call back and và lấy dữ liệu
     useEffect(() => {
         WebSocketService.registerCallback('GET_USER_LIST', (data) => {
+            console.log('GET_USER_LIST data received:', data);
             setUserList(data);
             localStorage.setItem('userList', JSON.stringify(data)); // Lưu data vào localStorage
 
@@ -69,13 +70,11 @@ const ChatList = ({ user }) => {
         }
     }, []);
 
-    // Lấy message mới nhất từ người dùng cụ thể
     const getLatestMessageForUser = (userName) => {
         const messagesForUser = messageData.filter(msg => msg.name === userName || msg.to === userName);
 
         if (messagesForUser.length === 0) return '';
 
-        // So sánh ngày gửi tin nhắn giữa các message
         const latestMessage = messagesForUser.reduce((prev, current) => (
             new Date(current.createAt) > new Date(prev.createAt) ? current : prev
         ));
@@ -83,7 +82,6 @@ const ChatList = ({ user }) => {
         return `${sender}${latestMessage.mes}`;
     };
 
-    // Lọc user khi tìm kiếm
     const filteredUserList = userList.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
@@ -106,15 +104,17 @@ const ChatList = ({ user }) => {
                 />
             </div>
             {filteredUserList.map((user, index) => (
-                <div key={index} className="item">
+                <div key={index} className="item" onClick={() => onUserSelect(user)}>
+                    <div className="avatar-container">
                     <img src="/avatar.png" alt=""/>
+                </div>
                     <div className="texts">
                         <span>{user.name}</span>
                         <p className="message">{getLatestMessageForUser(user.name)}</p>
                     </div>
                 </div>
             ))}
-            {addMode && <AddUser/>}
+            {addMode && <AddUser />}
         </div>
     );
 };
