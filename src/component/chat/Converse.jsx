@@ -35,13 +35,16 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
                 mes: data.mes,
                 createAt: new Date().toISOString()
             };
-            setMessageData(prev => {
-                const updatedMessages = [newMessage, ...prev];
-                localStorage.setItem("messageData", JSON.stringify(updatedMessages));
-                return updatedMessages;
-            });
+            // Kiểm tra nếu tin nhắn mới là của người dùng đang xem hoặc là người gửi, thì mới cập nhật messageData
+            if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
+                setMessageData(prev => {
+                    const updatedMessages = [newMessage, ...prev];
+                    localStorage.setItem("messageData", JSON.stringify(updatedMessages));
+                    return updatedMessages;
+                });
+            }
         });
-    }, [setMessageData]);
+    }, [setMessageData, selectedUser]);
 
     const formatMessageTime = (timestamp) => {
         const messageDate = new Date(timestamp);
