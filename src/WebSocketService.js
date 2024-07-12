@@ -7,18 +7,19 @@ const WebSocketService = (() => {
 
         socket.onopen = () => {
             console.log('WebSocket connected');
+            if (callbacks['open']) {
+                callbacks['open']();
+            }
         };
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.event === 'REGISTER') {
-                handleRegisterResponse(data);
-            } else if (data.status == 'success') {
-=======
-            if (callbacks[data.event]) {
+            if (data.status == 'success') {
                 callbacks[data.event](data.data);
-            } else {
-                console.warn(`No callback registered for event: ${data.event}`);
+            }else if (data.status == 'error'){
+                callbacks[data.event](data.mes);
+            }else if (data.event === 'REGISTER') {
+                handleRegisterResponse(data);
             }
         };
 
@@ -53,9 +54,10 @@ const WebSocketService = (() => {
     };
 
     const close = () => {
-        socket.onclose();
-    }
-
+        if (socket) {
+            socket.close();
+        }
+    };
 
     return {
         connect,
