@@ -47,17 +47,25 @@ const Login = ({ setUser }) => {
 
     const handleLogin = e => {
         e.preventDefault();
-        WebSocketService.sendMessage({
-            action: 'onchat',
-            data: {
-                event: 'LOGIN',
+
+        // Register the open event callback to send the login message after connecting
+        WebSocketService.registerCallback('open', () => {
+            WebSocketService.sendMessage({
+                action: 'onchat',
                 data: {
-                    user: credentials.user,
-                    pass: credentials.pass
+                    event: 'LOGIN',
+                    data: {
+                        user: credentials.user,
+                        pass: credentials.pass
+                    }
                 }
-            }
+            });
         });
+
+        // Connect to the WebSocket server
+        WebSocketService.connect('ws://140.238.54.136:8080/chat/chat');
     };
+
     return (
         <div className='login'>
             <div className="item">

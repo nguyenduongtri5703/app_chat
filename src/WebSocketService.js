@@ -7,6 +7,9 @@ const WebSocketService = (() => {
 
         socket.onopen = () => {
             console.log('WebSocket connected');
+            if (callbacks['open']) {
+                callbacks['open']();
+            }
         };
 
         socket.onmessage = (event) => {
@@ -41,9 +44,10 @@ const WebSocketService = (() => {
     };
 
     const close = () => {
-        socket.onclose();
-    }
-
+        if (socket) {
+            socket.close();
+        }
+    };
 
     return {
         connect,

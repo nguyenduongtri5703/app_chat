@@ -106,15 +106,17 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                 />
             </div>
             {filteredUserList.map((user, index) => (
-                <div key={index} className="item" onClick={()=> onUserSelect(user)}>
+                <div key={index} className="item" onClick={() => onUserSelect(user)}>
+                    <div className="avatar-container">
                     <img src="/avatar.png" alt=""/>
+                </div>
                     <div className="texts">
                         <span>{user.name}</span>
                         <p className="message">{getLatestMessageForUser(user.name)}</p>
                     </div>
                 </div>
             ))}
-            {addMode && <AddUser/>}
+            {addMode && <AddUser userList={userList} />}
         </div>
     );
 };
