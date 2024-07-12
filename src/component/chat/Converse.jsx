@@ -19,7 +19,7 @@ const Converse = ({selectedUser}) => {
 
     useEffect(() => {
         endRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messageData]);
+    }, [messageData, selectedUser]);
 
     const formatMessageTime = (timestamp) => {
         const messageDate = new Date(timestamp);
@@ -55,7 +55,7 @@ const Converse = ({selectedUser}) => {
         setOpen(false)
     }
 
-    const messagesToShow = [...messageData.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse();
+    const messagesToShow = selectedUser ? [...messageData.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse() : [];
   return (
       <div className='converse'>
         <div className="top">
