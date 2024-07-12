@@ -23,7 +23,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                 }
             });
 
-            localStorage.setItem('messageData', JSON.stringify(updatedMessages)); // Update localStorage
+            // localStorage.setItem('messageData', JSON.stringify(updatedMessages)); // Update localStorage
 
             return updatedMessages.sort((a, b) => new Date(b.createAt) - new Date(a.createAt)); // Sort messages by createAt descending
         });
@@ -33,7 +33,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
     useEffect(() => {
         WebSocketService.registerCallback('GET_USER_LIST', (data) => {
             setUserList(data);
-            localStorage.setItem('userList', JSON.stringify(data)); // Lưu data vào localStorage
+            // localStorage.setItem('userList', JSON.stringify(data)); // Lưu data vào localStorage
 
             // Gửi data đến từng user trong list
             data.forEach(user => {
