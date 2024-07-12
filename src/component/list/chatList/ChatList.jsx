@@ -116,7 +116,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                     </div>
                 </div>
             ))}
-            {addMode && <AddUser/>}
+            {addMode && <AddUser userList={userList} />}
         </div>
     );
 };
