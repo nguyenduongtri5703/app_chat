@@ -11,10 +11,10 @@ const WebSocketService = (() => {
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (callbacks[data.event]) {
+            if (data.status == 'success') {
                 callbacks[data.event](data.data);
-            } else {
-                console.warn(`No callback registered for event: ${data.event}`);
+            }else if (data.status == 'error'){
+                callbacks[data.event](data.mes);
             }
         };
 
