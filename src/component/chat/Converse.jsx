@@ -1,12 +1,14 @@
 import "./converse.css"
 import EmojiPicker from "emoji-picker-react";
 import {useEffect, useRef, useState} from "react";
+import WebSocketService from "../../WebSocketService";
 
-const Converse = ({selectedUser}) => {
+const Converse = ({selectedUser, messageData, setMessageData}) => {
     const [open, setOpen] = useState(false);
     const [text, setText] = useState("");
+    const [messageList, setMessageList] = useState([]);
 
-    const [messageData, setMessageData] = useState([]);
+    // const [messageData, setMessageData] = useState([]);
 
     const endRef = useRef(null);
 
@@ -18,8 +20,12 @@ const Converse = ({selectedUser}) => {
     }, []);
 
     useEffect(() => {
+        setMessageList(messageData);
+    }, [messageData]);
+
+    useEffect(() => {
         endRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messageData, selectedUser]);
+    }, [messageList, selectedUser]);
 
     const formatMessageTime = (timestamp) => {
         const messageDate = new Date(timestamp);
@@ -29,7 +35,7 @@ const Converse = ({selectedUser}) => {
         const timeDifference = (currentDate.getTime() - messageDate.getTime()) / 1000; // Đổi sang giây
 
         if (timeDifference < 60) {
-            return `${Math.floor(timeDifference)} giây trước`;
+            return `${Math.floor(timeDifference / 60)} phút trước`;
         } else if (timeDifference < 3600) {
             return `${Math.floor(timeDifference / 60)} phút trước`;
         } else if (
@@ -55,7 +61,41 @@ const Converse = ({selectedUser}) => {
         setOpen(false)
     }
 
-    const messagesToShow = selectedUser ? [...messageData.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse() : [];
+    const handleSendMessage = () => {
+        if (!text.trim()) return;
+
+        const newMessage = {
+            type: "people",
+            to: selectedUser.name,
+            mes: text
+        };
+
+        WebSocketService.sendMessage({
+            action: "onchat",
+            data: {
+                event: "SEND_CHAT",
+                data: newMessage
+            }
+        });
+
+        const messageWithTimestamp = {
+            ...newMessage,
+            createAt: new Date().toISOString()
+        };
+
+        const updatedMessages = [messageWithTimestamp, ...messageData];
+
+        setMessageData(updatedMessages);
+        localStorage.setItem("messageData", JSON.stringify(updatedMessages));
+
+        setText("");
+    }
+
+    const isOwnMessage = (message) => {
+        return message.to === selectedUser.name;
+    };
+
+    const messagesToShow = selectedUser ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse() : [];
   return (
       <div className='converse'>
         <div className="top">
@@ -112,8 +152,8 @@ const Converse = ({selectedUser}) => {
               {/*    </div>*/}
               {/*</div>*/}
               {messagesToShow.map((message, index) => (
-                  <div key={index} className={`message ${message.to === selectedUser.name ? "own" : ""}`}>
-                      {message.to !== selectedUser.name && (
+                  <div key={index} className={`message ${isOwnMessage(message) ? "own" : ""}`}>
+                      {!isOwnMessage(message) && (
                           <img src="/avatar.png" alt="" />
                       )}
                       <div className="texts">
@@ -142,7 +182,7 @@ const Converse = ({selectedUser}) => {
                       <EmojiPicker open={open} onEmojiClick={handleEmoji}/>
                   </div>
               </div>
-              <button className="sendButton">Gửi</button>
+              <button className="sendButton" onClick={handleSendMessage}>Gửi</button>
           </div>
       </div>
   )

@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import AddUser from "./addUser/addUser";
 import WebSocketService from "../../../WebSocketService";
 
-const ChatList = ({ user, onUserSelect }) => {
+const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
     const [addMode, setAddMode] = useState(false);
     const [userList, setUserList] = useState([]);
-    const [messageData, setMessageData] = useState([]);
+    // const [messageData, setMessageData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
     // Cập nhật thông tin messageData
