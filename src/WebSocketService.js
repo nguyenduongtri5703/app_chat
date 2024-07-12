@@ -11,10 +11,12 @@ const WebSocketService = (() => {
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.event === 'LOGIN') {
-                handleLoginResponse(data);
-            } else if (data.event === 'REGISTER') {
+            if (data.event === 'REGISTER') {
                 handleRegisterResponse(data);
+            } else if (data.status == 'success') {
+                callbacks[data.event](data.data);
+            }else if (data.status == 'error'){
+                callbacks[data.event](data.mes);
             }
         };
 
@@ -27,13 +29,7 @@ const WebSocketService = (() => {
         };
     };
 
-    const handleLoginResponse = (data) => {
-        if (data.status === 'success') {
-            callbacks[data.event](data.data);
-        } else if (data.status === 'error') {
-            callbacks[data.event](data.mes);
-        }
-    };
+    // đăng ký
 
     const handleRegisterResponse = (data) => {
         if (data.status === 'success' || data.status === 'error') {
@@ -48,14 +44,16 @@ const WebSocketService = (() => {
     const sendMessage = (message) => {
         try {
             socket.send(JSON.stringify(message));
+            // console.log(message)
         } catch (error) {
             console.error('Error sending message:', error);
         }
     };
 
     const close = () => {
-        socket.close();
+        socket.onclose();
     }
+
 
     return {
         connect,
@@ -63,6 +61,9 @@ const WebSocketService = (() => {
         sendMessage,
         close
     };
+
+
 })();
+
 
 export default WebSocketService;
