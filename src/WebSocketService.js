@@ -18,6 +18,8 @@ const WebSocketService = (() => {
                 callbacks[data.event](data.data);
             }else if (data.status == 'error'){
                 callbacks[data.event](data.mes);
+            }else if (data.event === 'REGISTER') {
+                handleRegisterResponse(data);
             }
         };
 
@@ -28,6 +30,14 @@ const WebSocketService = (() => {
         socket.onerror = (error) => {
             console.log('WebSocket error', error);
         };
+    };
+
+    // đăng ký
+
+    const handleRegisterResponse = (data) => {
+        if (data.status === 'success' || data.status === 'error') {
+            callbacks[data.event](data);
+        }
     };
 
     const registerCallback = (event, callback) => {
@@ -55,6 +65,9 @@ const WebSocketService = (() => {
         sendMessage,
         close
     };
+
+
 })();
+
 
 export default WebSocketService;
