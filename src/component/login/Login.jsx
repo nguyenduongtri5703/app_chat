@@ -4,9 +4,8 @@ import { toast } from "react-toastify";
 import WebSocketService from "../../WebSocketService";
 
 const Login = ({ setUser }) => {
-    const [avatar, setAvatar] = useState({ file: null, url: "" });
     const [credentials, setCredentials] = useState({ user: "", pass: "" });
-    const [registerCredentials, setRegisterCredentials] = useState({ username: "", email: "", password: "" });
+    const [registerCredentials, setRegisterCredentials] = useState({ username: "", password: "" });
 
     useEffect(() => {
         WebSocketService.registerCallback('LOGIN', (data) => {
@@ -30,13 +29,13 @@ const Login = ({ setUser }) => {
 
         WebSocketService.registerCallback('REGISTER', (data) => {
             console.log('Register response:', data);
-            if (data.status === 'success') {  // kiểm tra xem thành công không
+            if (data.status === 'success') {
                 toast.success("Đăng ký thành công");
             } else {
                 toast.error("Đăng ký thất bại");
             }
         });
-    }, [credentials, registerCredentials, setUser]);
+    }, [credentials, setUser]);
 
     const handleInputChange = e => {
         const { name, value } = e.target;
@@ -54,15 +53,6 @@ const Login = ({ setUser }) => {
         });
     };
 
-    const handleAvatar = e => {
-        if (e.target.files[0]) {
-            setAvatar({
-                file: e.target.files[0],
-                url: URL.createObjectURL(e.target.files[0])
-            });
-        }
-    };
-
     const handleLogin = e => {
         e.preventDefault();
         WebSocketService.sendMessage({
@@ -77,7 +67,6 @@ const Login = ({ setUser }) => {
         });
     };
 
-
     const handleRegister = e => {
         e.preventDefault();
         WebSocketService.sendMessage({
@@ -85,13 +74,12 @@ const Login = ({ setUser }) => {
             data: {
                 event: 'REGISTER',
                 data: {
-                    user: registerCredentials.email,
+                    user: registerCredentials.username,
                     pass: registerCredentials.password
                 }
             }
         });
     };
-
 
     return (
         <div className='login'>
@@ -107,13 +95,7 @@ const Login = ({ setUser }) => {
             <div className="item">
                 <h2>Tạo tài khoản</h2>
                 <form onSubmit={handleRegister}>
-                    <label htmlFor="file">
-                        <img src={avatar.url || "/avatar.png"} alt="" />
-                        Tải ảnh lên
-                    </label>
-                    <input type="file" id="file" style={{ display: "none" }} onChange={handleAvatar} />
                     <input type="text" name="username" placeholder="Tên người dùng" value={registerCredentials.username} onChange={handleRegisterInputChange} />
-                    <input type="text" name="email" placeholder="Email" value={registerCredentials.email} onChange={handleRegisterInputChange} />
                     <input type="password" name="password" placeholder="Mật khẩu" value={registerCredentials.password} onChange={handleRegisterInputChange} />
                     <button>Đăng ký</button>
                 </form>
