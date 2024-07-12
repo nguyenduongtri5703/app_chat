@@ -27,6 +27,22 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
         endRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messageList, selectedUser]);
 
+    useEffect(() => {
+        WebSocketService.registerCallback("SEND_CHAT", (data) => {
+            const newMessage = {
+                type: "people",
+                to: data.name,
+                mes: data.mes,
+                createAt: new Date().toISOString()
+            };
+            setMessageData(prev => {
+                const updatedMessages = [newMessage, ...prev];
+                localStorage.setItem("messageData", JSON.stringify(updatedMessages));
+                return updatedMessages;
+            });
+        });
+    }, [setMessageData]);
+
     const formatMessageTime = (timestamp) => {
         const messageDate = new Date(timestamp);
         const currentDate = new Date();
@@ -91,10 +107,6 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
         setText("");
     }
 
-    const isOwnMessage = (message) => {
-        return message.to === selectedUser.name;
-    };
-
     const messagesToShow = selectedUser ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse() : [];
   return (
       <div className='converse'>
@@ -112,48 +124,9 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
           </div>
         </div>
           <div className="center">
-              {/*<div className="message">*/}
-              {/*    <img src="/avatar.png" alt=""/>*/}
-              {/*    <div className="texts">*/}
-              {/*        <p>Previously known as an outstanding Jinzhou Patroller,*/}
-              {/*            Yinlin is steady and reliable,*/}
-              {/*            yet harbors hidden depths of secrets.*/}
-              {/*        </p>*/}
-              {/*        <span>1 phút trước</span>*/}
-              {/*    </div>*/}
-              {/*</div>*/}
-              {/*<div className="message own">*/}
-              {/*    <div className="texts">*/}
-              {/*        <p>Previously known as an outstanding Jinzhou Patroller,*/}
-              {/*            Yinlin is steady and reliable,*/}
-              {/*            yet harbors hidden depths of secrets.*/}
-              {/*        </p>*/}
-              {/*        <span>1 phút trước</span>*/}
-              {/*    </div>*/}
-              {/*</div>*/}
-              {/*<div className="message">*/}
-              {/*    <img src="/avatar.png" alt=""/>*/}
-              {/*    <div className="texts">*/}
-              {/*        <p>Previously known as an outstanding Jinzhou Patroller,*/}
-              {/*            Yinlin is steady and reliable,*/}
-              {/*            yet harbors hidden depths of secrets.*/}
-              {/*        </p>*/}
-              {/*        <span>1 phút trước</span>*/}
-              {/*    </div>*/}
-              {/*</div>*/}
-              {/*<div className="message own">*/}
-              {/*    <div className="texts">*/}
-              {/*        <img src="https://scontent.fsgn4-1.fna.fbcdn.net/v/t39.30808-6/448839707_984915886354727_5128022529440101055_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeGDKerHQJtjNom2Xp2NGrwn-Aw-xZTJspz4DD7FlMmynIZ_QeGu1m7OZ3PpJcdy3N0iPNLkFrQRJEnyYRzkN1HC&_nc_ohc=652BL-yu8eUQ7kNvgGqtneO&_nc_ht=scontent.fsgn4-1.fna&oh=00_AYCFhFxa2kS32uDZcpW9dkLZZuiAHCGODE7IWbRvyn22bQ&oe=667B32C8" alt=""/>*/}
-              {/*        <p>Previously known as an outstanding Jinzhou Patroller,*/}
-              {/*            Yinlin is steady and reliable,*/}
-              {/*            yet harbors hidden depths of secrets.*/}
-              {/*        </p>*/}
-              {/*        <span>1 phút trước</span>*/}
-              {/*    </div>*/}
-              {/*</div>*/}
               {messagesToShow.map((message, index) => (
-                  <div key={index} className={`message ${isOwnMessage(message) ? "own" : ""}`}>
-                      {!isOwnMessage(message) && (
+                  <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
+                      {message.name !== selectedUser.name && (
                           <img src="/avatar.png" alt="" />
                       )}
                       <div className="texts">
