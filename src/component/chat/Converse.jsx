@@ -154,17 +154,21 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
     return (
         <div className='converse'>
             <div className="top">
-                <div className="user">
-                    <img src="/avatar.png" alt=""/>
-                    <div className="texts">
-                        <span>{selectedUser ? selectedUser.name : ''}</span>
+                {selectedUser && (
+                    <div className="user">
+                        <img src="/avatar.png" alt=""/>
+                        <div className="texts">
+                            <span>{selectedUser ? selectedUser.name : ''}</span>
+                        </div>
                     </div>
-                </div>
-                <div className="icons">
-                    <img src="/phone.png" alt=""/>
-                    <img src="/video.png" alt=""/>
-                    <img src="/info.png" alt=""/>
-                </div>
+                )}
+                {selectedUser && (
+                    <div className="icons">
+                        <img src="/phone.png" alt=""/>
+                        <img src="/video.png" alt=""/>
+                        <img src="/info.png" alt=""/>
+                    </div>
+                )}
             </div>
             <div className="center" onScroll={handleScroll}>
                 {messagesToShow.map((message, index) => (
