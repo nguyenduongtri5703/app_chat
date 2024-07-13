@@ -7,6 +7,54 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
     const [open, setOpen] = useState(false);
     const [text, setText] = useState("");
     const [messageList, setMessageList] = useState([]);
+    const [hasMoreMessages, setHasMoreMessages] = useState(true);
+    const [scrolledToBottom, setScrolledToBottom] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const loadMoreMessages = () => {
+        if (!hasMoreMessages) return;
+
+        const nextPage = currentPage + 1; // Tính toán trang tiếp theo cần lấy
+
+        WebSocketService.sendMessage({
+            action: "onchat",
+            data: {
+                event: "GET_PEOPLE_CHAT_MES",
+                data: {
+                    name: selectedUser.name,
+                    page: nextPage
+                }
+            }
+        });
+
+        setCurrentPage(nextPage);
+    };
+
+    useEffect(() => {
+        WebSocketService.registerCallback("GET_PEOPLE_CHAT_MES", (data) => {
+            if (data.length === 0) {
+                setHasMoreMessages(false);
+                return;
+            }
+            console.log("Data: " + data.length);
+
+            //Thêm dữ liệu mới vào đầu messageData
+            setMessageData(currentMessages => [...data, ...currentMessages]);
+
+        });
+    }, []);
+
+    const handleScroll = (event) => {
+        const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
+        if (scrollTop === 0 && messageList.length > 0) {
+            loadMoreMessages();
+        }
+        if (scrollTop + clientHeight === scrollHeight) {
+            setScrolledToBottom(true);
+        } else {
+            setScrolledToBottom(false);
+        }
+    };
 
     const endRef = useRef(null);
 
@@ -15,8 +63,10 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
     }, [messageData]);
 
     useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messageList, selectedUser]);
+        if (scrolledToBottom) {
+            endRef.current?.scrollIntoView({ behavior: "auto" });
+        }
+    }, [messageList, selectedUser, scrolledToBottom]);
 
     const formatMessageTime = (timestamp) => {
         const messageDate = new Date(timestamp);
@@ -116,7 +166,7 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
                     <img src="/info.png" alt=""/>
                 </div>
             </div>
-            <div className="center">
+            <div className="center" onScroll={handleScroll}>
                 {messagesToShow.map((message, index) => (
                     <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
                         {message.name === selectedUser.name && (
