@@ -8,16 +8,7 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
     const [text, setText] = useState("");
     const [messageList, setMessageList] = useState([]);
 
-    // const [messageData, setMessageData] = useState([]);
-
     const endRef = useRef(null);
-
-    useEffect(() => {
-        const storedMessageData = localStorage.getItem('messageData');
-        if (storedMessageData) {
-            setMessageData(JSON.parse(storedMessageData));
-        }
-    }, []);
 
     useEffect(() => {
         setMessageList(messageData);
@@ -27,34 +18,13 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
         endRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messageList, selectedUser]);
 
-    useEffect(() => {
-        WebSocketService.registerCallback("SEND_CHAT", (data) => {
-            const newMessage = {
-                type: "people",
-                to: data.name,
-                mes: data.mes,
-                createAt: new Date().toISOString()
-            };
-            // Kiểm tra nếu tin nhắn mới là của người dùng đang xem hoặc là người gửi, thì mới cập nhật messageData
-            if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
-                setMessageData(prev => {
-                    const updatedMessages = [newMessage, ...prev];
-                    localStorage.setItem("messageData", JSON.stringify(updatedMessages));
-                    return updatedMessages;
-                });
-            }
-        });
-    }, [setMessageData, selectedUser]);
-
     const formatMessageTime = (timestamp) => {
         const messageDate = new Date(timestamp);
         const currentDate = new Date();
-
-        // Độ chênh lệch giờ hiện tại và thời gian tin nhắn
-        const timeDifference = (currentDate.getTime() - messageDate.getTime()) / 1000; // Đổi sang giây
+        const timeDifference = (currentDate.getTime() - messageDate.getTime()) / 1000;
 
         if (timeDifference < 60) {
-            return `${Math.floor(timeDifference / 60)} phút trước`;
+            return `0 phút trước`;
         } else if (timeDifference < 3600) {
             return `${Math.floor(timeDifference / 60)} phút trước`;
         } else if (
@@ -70,14 +40,13 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
         ) {
             return "Hôm qua";
         } else {
-            // Nếu không phải trong ngày hôm qua thì hiển thị ngày và giờ
             return messageDate.toLocaleString();
         }
     };
 
     const handleEmoji = (e) => {
-        setText(prev=>prev+e.emoji)
-        setOpen(false)
+        setText(prev => prev + e.emoji);
+        setOpen(false);
     }
 
     const handleSendMessage = () => {
@@ -86,82 +55,105 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
         const newMessage = {
             type: "people",
             to: selectedUser.name,
-            mes: text
+            mes: text,
         };
 
         WebSocketService.sendMessage({
             action: "onchat",
             data: {
                 event: "SEND_CHAT",
-                data: newMessage
+                data: newMessage,
             }
         });
 
         const messageWithTimestamp = {
             ...newMessage,
+            name: localStorage.getItem('user').name,
             createAt: new Date().toISOString()
         };
 
         const updatedMessages = [messageWithTimestamp, ...messageData];
-
         setMessageData(updatedMessages);
-        localStorage.setItem("messageData", JSON.stringify(updatedMessages));
 
         setText("");
     }
 
-    const messagesToShow = selectedUser ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse() : [];
-  return (
-      <div className='converse'>
-        <div className="top">
-          <div className="user">
-            <img src="/avatar.png" alt=""/>
-            <div className="texts">
-              <span>{selectedUser ? selectedUser.name : ''}</span>
+    useEffect(() => {
+        WebSocketService.registerCallback("SEND_CHAT", (data) => {
+            // Check if the message is for the selected user or from the current user
+            if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
+                const newMessage = {
+                    type: "people",
+                    name: data.name,
+                    to: data.to,
+                    mes: data.mes,
+                    createAt: new Date().toISOString()
+                };
+                setMessageData(current => {
+                    const updatedMessages = [newMessage, ...current];
+                    return updatedMessages;
+                });
+            }
+        });
+    }, [setMessageData, selectedUser]);
+
+    const messagesToShow = selectedUser
+        ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
+        : [];
+    console.log('data: ' + JSON.stringify(messagesToShow,null, 2))
+    return (
+        <div className='converse'>
+            <div className="top">
+                <div className="user">
+                    <img src="/avatar.png" alt=""/>
+                    <div className="texts">
+                        <span>{selectedUser ? selectedUser.name : ''}</span>
+                    </div>
+                </div>
+                <div className="icons">
+                    <img src="/phone.png" alt=""/>
+                    <img src="/video.png" alt=""/>
+                    <img src="/info.png" alt=""/>
+                </div>
             </div>
-          </div>
-          <div className="icons">
-            <img src="/phone.png" alt=""/>
-            <img src="/video.png" alt=""/>
-            <img src="/info.png" alt=""/>
-          </div>
-        </div>
-          <div className="center">
-              {messagesToShow.map((message, index) => (
-                  <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
-                      {message.name === selectedUser.name && (
-                          <img src="/avatar.png" alt="" />
-                      )}
-                      <div className="texts">
-                          <p>{message.mes}</p>
-                          <span title={new Date(message.createAt).toLocaleString()}>
+            <div className="center">
+                {messagesToShow.map((message, index) => (
+                    <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
+                        {message.name === selectedUser.name && (
+                            <img src="/avatar.png" alt="" />
+                        )}
+                        <div className="texts">
+                            <p>{message.mes}</p>
+                            <span title={new Date(message.createAt).toLocaleString()}>
                                 {formatMessageTime(message.createAt)}
                             </span>
-                      </div>
-                  </div>
-              ))}
-              <div ref={endRef}></div>
-          </div>
-          <div className="bottom">
-          <div className="icons">
-                  <img src="/img.png" alt=""/>
-                  <img src="/camera.png" alt=""/>
-                  <img src="/mic.png" alt=""/>
-              </div>
-              <input type="text" placeholder="Nhập tin nhắn..."
-                     value={text}
-                     onChange={(e) => setText(e.target.value)}
-              />
-              <div className="emoji">
-                  <img src="/emoji.png" alt="" onClick={() => setOpen(prev => !prev)}/>
-                  <div className="picker">
-                      <EmojiPicker open={open} onEmojiClick={handleEmoji}/>
-                  </div>
-              </div>
-              <button className="sendButton" onClick={handleSendMessage}>Gửi</button>
-          </div>
-      </div>
-  )
+                        </div>
+                    </div>
+                ))}
+                <div ref={endRef}></div>
+            </div>
+            <div className="bottom">
+                <div className="icons">
+                    <img src="/img.png" alt=""/>
+                    <img src="/camera.png" alt=""/>
+                    <img src="/mic.png" alt=""/>
+                </div>
+                <input
+                    type="text"
+                    placeholder="Nhập tin nhắn..."
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                />
+                <div className="emoji">
+                    <img src="/emoji.png" alt="" onClick={() => setOpen(prev => !prev)} />
+                    <div className="picker">
+                        <EmojiPicker open={open} onEmojiClick={handleEmoji} />
+                    </div>
+                </div>
+                <button className="sendButton" onClick={handleSendMessage}>Gửi</button>
+            </div>
+        </div>
+    )
 }
 
 export default Converse;

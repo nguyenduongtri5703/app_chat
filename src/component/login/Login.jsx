@@ -34,6 +34,7 @@ const Login = ({ setUser }) => {
             } else {
                 toast.error("Đăng ký thất bại");
             }
+            WebSocketService.connect('ws://140.238.54.136:8080/chat/chat')
         });
     }, [credentials, setUser]);
 
