@@ -150,7 +150,7 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
     const messagesToShow = selectedUser
         ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
         : [];
-    console.log('data: ' + JSON.stringify(messagesToShow,null, 2))
+    // console.log('data: ' + JSON.stringify(messagesToShow,null, 2))
     return (
         <div className='converse'>
             <div className="top">

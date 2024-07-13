@@ -6,10 +6,9 @@ import WebSocketService from "../../../WebSocketService";
 const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
     const [addMode, setAddMode] = useState(false);
     const [userList, setUserList] = useState([]);
-    // const [messageData, setMessageData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [userOnline   , setUserOnline] = useState({});
 
-    // Cập nhật thông tin messageData
     const handleWebSocketData = (data) => {
         setMessageData(prevMessages => {
             const updatedMessages = [...prevMessages];
@@ -23,20 +22,16 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                 }
             });
 
-            // localStorage.setItem('messageData', JSON.stringify(updatedMessages)); // Update localStorage
-
             return updatedMessages.sort((a, b) => new Date(b.createAt) - new Date(a.createAt)); // Sort messages by createAt descending
         });
     };
 
-    // useEffect để register call back and và lấy dữ liệu
     useEffect(() => {
         WebSocketService.registerCallback('GET_USER_LIST', (data) => {
-            setUserList(data);
-            // localStorage.setItem('userList', JSON.stringify(data)); // Lưu data vào localStorage
-
-            // Gửi data đến từng user trong list
-            data.forEach(user => {
+            // Filter out the logged-in user from the user list
+            const filteredData = data.filter(u => u.name !== user.user);
+            setUserList(filteredData);
+            filteredData.forEach(user => {
                 WebSocketService.sendMessage({
                     action: "onchat",
                     data: {
@@ -49,15 +44,14 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                 });
             });
         });
+
         WebSocketService.registerCallback('GET_PEOPLE_CHAT_MES', handleWebSocketData);
         WebSocketService.sendMessage({
             action: "onchat",
             data: { event: "GET_USER_LIST" }
         });
+    }, [user]);
 
-    }, []);
-
-    // Effect để load messageData và userList từ localStorage
     useEffect(() => {
         const storedMessageData = localStorage.getItem('messageData');
         const storedUserList = localStorage.getItem('userList');
@@ -69,13 +63,18 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
         }
     }, []);
 
-    // Lấy message mới nhất từ người dùng cụ thể
+    useEffect(() => {
+        const sortedUserList = [...userList].sort((a, b) => {
+            const latestMessageA = messageData.find(msg => msg.name === a.name || msg.to === a.name);
+            const latestMessageB = messageData.find(msg => msg.name === b.name || msg.to === b.name);
+            return new Date(latestMessageB?.createAt || 0) - new Date(latestMessageA?.createAt || 0);
+        });
+        setUserList(sortedUserList);
+    }, [messageData]);
+
     const getLatestMessageForUser = (userName) => {
         const messagesForUser = messageData.filter(msg => msg.name === userName || msg.to === userName);
-
         if (messagesForUser.length === 0) return '';
-
-        // So sánh ngày gửi tin nhắn giữa các message
         const latestMessage = messagesForUser.reduce((prev, current) => (
             new Date(current.createAt) > new Date(prev.createAt) ? current : prev
         ));
@@ -83,7 +82,6 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
         return `${sender}${latestMessage.mes}`;
     };
 
-    // Lọc user khi tìm kiếm
     const filteredUserList = userList.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
@@ -108,8 +106,8 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
             {filteredUserList.map((user, index) => (
                 <div key={index} className="item" onClick={() => onUserSelect(user)}>
                     <div className="avatar-container">
-                    <img src="/avatar.png" alt=""/>
-                </div>
+                        <img src="/avatar.png" alt=""/>
+                    </div>
                     <div className="texts">
                         <span>{user.name}</span>
                         <p className="message">{getLatestMessageForUser(user.name)}</p>

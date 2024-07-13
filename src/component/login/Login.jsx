@@ -28,13 +28,14 @@ const Login = ({ setUser }) => {
         });
 
         WebSocketService.registerCallback('REGISTER', (data) => {
+            WebSocketService.connect('ws://140.238.54.136:8080/chat/chat')
             console.log('Register response:', data);
             if (data.status === 'success') {
                 toast.success("Đăng ký thành công");
             } else {
                 toast.error("Đăng ký thất bại");
             }
-            WebSocketService.connect('ws://140.238.54.136:8080/chat/chat')
+            WebSocketService.close()
         });
     }, [credentials, setUser]);
 
