@@ -55,6 +55,7 @@
                         display: flex;
                         align-items: center;
                         gap: 20px;
+
                         img {
                             width: 40px;
                             height: 40px;
@@ -98,5 +99,48 @@
                 background-color: #1a73e8;
             }
         }
+    }
+    .detail {
+           position: relative;
+           text-align: center;
+           margin-top: 20px;
+       }
+    .search .add {
+        width: 20px;
+        height: 20px;
+        background-color: rgba(17, 25, 40, 0.5);
+        padding: 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: inline-block;
+        margin: 5px;
+    }
+    .modal-content {
+        width: 300px;
+        padding: 30px;
+        background-color: rgba(17, 25, 40, 0.781);
+        border-radius: 10px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+    }
+    .modal-content input {
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+    }
+    .modal-content button {
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+        cursor: pointer;
     }
 }

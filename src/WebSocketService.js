@@ -1,6 +1,8 @@
 const WebSocketService = (() => {
     let socket;
     let callbacks = {};
+    let roomCreationCallback;
+    let roomJoinCallback;
 
     const connect = (url) => {
         socket = new WebSocket(url);
@@ -14,12 +16,29 @@ const WebSocketService = (() => {
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.status == 'success') {
-                callbacks[data.event](data.data);
-            }else if (data.status == 'error'){
-                callbacks[data.event](data.mes);
-            }else if (data.event === 'REGISTER') {
+             if (data.event === 'REGISTER') {
                 handleRegisterResponse(data);
+            }
+             else if (data.event === 'CREATE_ROOM') {
+                if (roomCreationCallback) {
+                    if (data.status === 'success') {
+                        roomCreationCallback(null, data.data);
+                    } else {
+                        roomCreationCallback(data.mes, null);
+                    }
+                }
+            } else if (data.event === 'JOIN_ROOM') {
+                if (roomJoinCallback) {
+                    if (data.status === 'success') {
+                        roomJoinCallback(null, data.data);
+                    } else {
+                        roomJoinCallback(data.mes, null);
+                    }
+                }
+            } else if (data.status === 'success') {
+                callbacks[data.event](data.data);
+            } else if (data.status === 'error') {
+                callbacks[data.event](data.mes);
             }
         };
 
@@ -32,8 +51,6 @@ const WebSocketService = (() => {
         };
     };
 
-    // đăng ký
-
     const handleRegisterResponse = (data) => {
         if (data.status === 'success' || data.status === 'error') {
             callbacks[data.event](data);
@@ -44,10 +61,17 @@ const WebSocketService = (() => {
         callbacks[event] = callback;
     };
 
+    const registerRoomCreationCallback = (callback) => {
+        roomCreationCallback = callback;
+    };
+
+    const registerRoomJoinCallback = (callback) => {
+        roomJoinCallback = callback;
+    };
+
     const sendMessage = (message) => {
         try {
             socket.send(JSON.stringify(message));
-            // console.log(message)
         } catch (error) {
             console.error('Error sending message:', error);
         }
@@ -62,12 +86,11 @@ const WebSocketService = (() => {
     return {
         connect,
         registerCallback,
+        registerRoomCreationCallback,
+        registerRoomJoinCallback,
         sendMessage,
         close
     };
-
-
 })();
-
 
 export default WebSocketService;
