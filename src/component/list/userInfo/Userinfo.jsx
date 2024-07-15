@@ -1,7 +1,7 @@
 import "./userInfo.css";
 
 const Userinfo = ({ user }) => {
-    console.log('Userinfo component user prop:', user);
+    // console.log('Userinfo component user prop:', user);
     return (
         <div className='userInfo'>
             <div className="user">

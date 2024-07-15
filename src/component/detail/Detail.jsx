@@ -1,39 +1,41 @@
 import React from 'react';
 import "./detail.css";
 import WebSocketService from "../../WebSocketService";
-import {useDispatch, useSelector} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser } from "../../store/userSlice";
 
-const Detail = ({ setUser }) => {
+const Detail = ({ user, setUser }) => {
     const dispatch = useDispatch();
-    const user = useSelector((state) => state.user.credentials);
+
     const handleLogout = () => {
         WebSocketService.sendMessage({
             action: "onchat",
-            data: {event: "LOGOUT"}
+            data: { event: "LOGOUT" },
         });
 
         if (!WebSocketService.registerCallback['AUTH']) {
-            setUser({isLoggedIn: false, credentials: null});
             dispatch(setUser({ isLoggedIn: false, credentials: null }));
             localStorage.removeItem('user');
             console.log('Logout confirmed:', 'You Logged out');
             WebSocketService.close();
+            window.location.href = '/login';
         } else {
             WebSocketService.registerCallback('AUTH', (data) => {
                 console.log('Logout confirmed:', data);
-                setUser({isLoggedIn: false, credentials: null});
                 dispatch(setUser({ isLoggedIn: false, credentials: null }));
                 localStorage.removeItem('user');
                 WebSocketService.close();
                 window.location.href = '/login';
             });
         }
-    }
+    };
+
+
     return (
         <div className='detail'>
             <div className="user">
                 <img src="/avatar.png" alt=""/>
-                <h2>{user.credentials.user || 'Dương Trí Nguyên'}</h2>
+                <h2>{user.user || 'Dương Trí Nguyên'}</h2>
                 <p>NLUer</p>
             </div>
             <div className="info">
@@ -107,6 +109,7 @@ const Detail = ({ setUser }) => {
                 <button className="logout" onClick={handleLogout}>Đăng xuất</button>
             </div>
         </div>
-    )
-}
+    );
+};
+
 export default Detail;
