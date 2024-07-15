@@ -1,16 +1,15 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import "./detail.css";
 import WebSocketService from "../../WebSocketService";
 import { useDispatch, useSelector } from "react-redux";
-import { clearUser } from "../../store/userSlice";
+import { clearUser, setUser as setUserRedux } from "../../store/userSlice";
 
-import {toast, ToastContainer} from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaUsers, FaUserPlus, FaTimes } from 'react-icons/fa';
 
-const Detail = ({setUser}) => {
+const Detail = ({ user, setUser }) => {
     const dispatch = useDispatch();
-    const user = useSelector((state) => state.user.credentials);
     const [roomName, setRoomName] = useState("");
     const [joinRoomName, setJoinRoomName] = useState("");
     const [showCreateRoom, setShowCreateRoom] = useState(false);
@@ -33,8 +32,6 @@ const Detail = ({setUser}) => {
             }
         });
     }, []);
-const Detail = ({ user, setUser }) => {
-    const dispatch = useDispatch();
 
     const handleLogout = () => {
         WebSocketService.sendMessage({
@@ -43,9 +40,7 @@ const Detail = ({ user, setUser }) => {
         });
 
         if (!WebSocketService.registerCallback['AUTH']) {
-            setUser({isLoggedIn: false, credentials: null});
-            dispatch(setUser({isLoggedIn: false, credentials: null}));
-            dispatch(setUser({ isLoggedIn: false, credentials: null }));
+            dispatch(setUserRedux({ isLoggedIn: false, credentials: null }));
             localStorage.removeItem('user');
             console.log('Logout confirmed:', 'You Logged out');
             WebSocketService.close();
@@ -53,9 +48,7 @@ const Detail = ({ user, setUser }) => {
         } else {
             WebSocketService.registerCallback('AUTH', (data) => {
                 console.log('Logout confirmed:', data);
-                setUser({isLoggedIn: false, credentials: null});
-                dispatch(setUser({isLoggedIn: false, credentials: null}));
-                dispatch(setUser({ isLoggedIn: false, credentials: null }));
+                dispatch(setUserRedux({ isLoggedIn: false, credentials: null }));
                 localStorage.removeItem('user');
                 WebSocketService.close();
                 window.location.href = '/login';
@@ -122,8 +115,6 @@ const Detail = ({ user, setUser }) => {
         WebSocketService.sendMessage(joinMessage);
         WebSocketService.sendMessage(chatMessageRoom);
         WebSocketService.sendMessage(chatMessagePeople);
-
-
     };
 
     const handleRoomCreationSuccess = (data) => {
@@ -148,7 +139,7 @@ const Detail = ({ user, setUser }) => {
 
     return (
         <div className='detail'>
-            <div className="user" style={{ paddingBottom: '0px' }}>
+            <div className="user" style={{paddingBottom: '0px'}}>
                 <img src="/avatar.png" alt=""/>
                 <h2>{user.user || 'Dương Trí Nguyên'}</h2>
                 <p>NLUer</p>
@@ -221,7 +212,6 @@ const Detail = ({ user, setUser }) => {
                         </div>
                     </div>
                 </div>
-
                 <button>Chặn</button>
                 <button className="logout" onClick={handleLogout}>Đăng xuất</button>
             </div>
