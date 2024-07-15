@@ -14,7 +14,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
     const loadMoreMessages = () => {
         if (!hasMoreMessages) return;
 
-        const nextPage = currentPage + 1; // Tính toán trang tiếp theo cần lấy
+        const nextPage = currentPage + 1;
 
         WebSocketService.sendMessage({
             action: "onchat",
@@ -38,8 +38,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
             }
             console.log("Data: " + data.length);
 
-            // Thêm dữ liệu mới vào đầu messageData
-            setMessageData((currentMessages) => [...data, ...currentMessages]);
+            setMessageData(currentMessages => [...data, ...currentMessages]);
         });
     }, [setMessageData]);
 
@@ -94,7 +93,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
     };
 
     const handleEmoji = (e) => {
-        setText((prev) => prev + e.emoji);
+        setText(prev => prev + e.emoji);
         setOpen(false);
     };
 
@@ -125,30 +124,31 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
         setMessageData(updatedMessages);
 
         setText("");
-    };
+    }
 
     useEffect(() => {
         WebSocketService.registerCallback("SEND_CHAT", (data) => {
             if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
-                const newMessage = {
-                    type: "people",
-                    name: data.name,
-                    to: data.to,
-                    mes: data.mes,
-                    createAt: data.createAt ? data.createAt.replace('T', ' ').replace('Z', '') : new Date().toISOString().replace('T', ' ').replace('Z', '')
-                };
-                setMessageData((current) => {
-                    const updatedMessages = [newMessage, ...current];
-                    return updatedMessages;
+                WebSocketService.sendMessage({
+                    action: "onchat",
+                    data: {
+                        event: "GET_PEOPLE_CHAT_MES",
+                        data: {
+                            name: selectedUser.name,
+                            page: 1
+                        }
+                    }
                 });
             }
         });
     }, [setMessageData, selectedUser]);
 
     const messagesToShow = selectedUser
-        ? [...messageList.filter((msg) => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
+        ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
         : [];
+
     console.log('data: ' + JSON.stringify(messagesToShow, null, 2));
+
     return (
         <div className='converse'>
             <div className="top">
@@ -197,7 +197,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
                     onChange={(e) => setText(e.target.value)}
                 />
                 <div className="emoji">
-                    <img src="/emoji.png" alt="" onClick={() => setOpen((prev) => !prev)} />
+                    <img src="/emoji.png" alt="" onClick={() => setOpen(prev => !prev)} />
                     <div className="picker">
                         <EmojiPicker open={open} onEmojiClick={handleEmoji} />
                     </div>
@@ -205,7 +205,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
                 <button className="sendButton" onClick={handleSendMessage}>Gửi</button>
             </div>
         </div>
-    );
-};
+    )
+}
 
 export default Converse;

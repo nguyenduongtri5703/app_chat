@@ -7,7 +7,6 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
     const [addMode, setAddMode] = useState(false);
     const [userList, setUserList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [userOnline   , setUserOnline] = useState({});
 
     const handleWebSocketData = (data) => {
         setMessageData(prevMessages => {
@@ -27,11 +26,20 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
     };
 
     useEffect(() => {
+        const fetchUserList = () => {
+            WebSocketService.sendMessage({
+                action: "onchat",
+                data: { event: "GET_USER_LIST" }
+            });
+        };
+
         WebSocketService.registerCallback('GET_USER_LIST', (data) => {
             // Filter out the logged-in user from the user list
             const filteredData = data.filter(u => u.name !== user.user);
             setUserList(filteredData);
-            filteredData.forEach(user => {
+
+            // Fetch messages for all users
+            filteredData.forEach((user) => {
                 WebSocketService.sendMessage({
                     action: "onchat",
                     data: {
@@ -46,11 +54,17 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
         });
 
         WebSocketService.registerCallback('GET_PEOPLE_CHAT_MES', handleWebSocketData);
-        WebSocketService.sendMessage({
-            action: "onchat",
-            data: { event: "GET_USER_LIST" }
-        });
+
+        fetchUserList();
+
     }, [user]);
+
+    useEffect(() => {
+        WebSocketService.registerCallback('NEW_MESSAGE', (message) => {
+            setMessageData(prevMessages => [...prevMessages, message]);
+        });
+
+    }, []);
 
     useEffect(() => {
         const storedMessageData = localStorage.getItem('messageData');
@@ -84,6 +98,20 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
 
     const filteredUserList = userList.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
+    const handleUserSelect = (user) => {
+        onUserSelect(user);
+        WebSocketService.sendMessage({
+            action: "onchat",
+            data: {
+                event: "GET_PEOPLE_CHAT_MES",
+                data: {
+                    name: user.name,
+                    page: 1
+                }
+            }
+        });
+    };
+
     return (
         <div className='chatList'>
             <div className="search">
@@ -104,7 +132,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                 />
             </div>
             {filteredUserList.map((user, index) => (
-                <div key={index} className="item" onClick={() => onUserSelect(user)}>
+                <div key={index} className="item" onClick={() => handleUserSelect(user)}>
                     <div className="avatar-container">
                         <img src="/avatar.png" alt=""/>
                     </div>
