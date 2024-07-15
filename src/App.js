@@ -6,8 +6,8 @@ import Converse from "./component/chat/Converse";
 import Login from "./component/login/Login";
 import Notification from "./component/notification/Notification";
 import WebSocketService from "./WebSocketService";
-import {useDispatch, useSelector} from "react-redux";
-import {setUser} from "./store/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "./store/userSlice";
 
 function App() {
     const user = useSelector((state) => state.user);
@@ -18,12 +18,17 @@ function App() {
     useEffect(() => {
         const savedUser = localStorage.getItem('user');
         if (savedUser) {
-            dispatch(setUser(JSON.parse(savedUser).credentials));
+            const userData = JSON.parse(savedUser);
+            dispatch(setUser({
+                isLoggedIn: true,
+                credentials: userData.credentials
+            }));
         }
 
         WebSocketService.connect('ws://140.238.54.136:8080/chat/chat');
         console.log('App component user state:', user);
     }, [dispatch]);
+
 
     return (
         <div className="container">
@@ -41,7 +46,9 @@ function App() {
                             messageData={messageData}
                             setMessageData={setMessageData}
                         />
-                        <Detail setUser={(user) => dispatch(setUser(user))} />
+                        <Detail user={user.credentials}
+                                setUser={(user) => dispatch(setUser(user))}
+                        />
                     </>
                 ) : (
                     <Login setUser={(user) => dispatch(setUser(user))} />

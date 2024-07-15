@@ -1,9 +1,9 @@
-import "./converse.css"
+import "./converse.css";
 import EmojiPicker from "emoji-picker-react";
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import WebSocketService from "../../WebSocketService";
 
-const Converse = ({selectedUser, messageData, setMessageData}) => {
+const Converse = ({ selectedUser, messageData, setMessageData }) => {
     const [open, setOpen] = useState(false);
     const [text, setText] = useState("");
     const [messageList, setMessageList] = useState([]);
@@ -38,11 +38,10 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
             }
             console.log("Data: " + data.length);
 
-            //Thêm dữ liệu mới vào đầu messageData
-            setMessageData(currentMessages => [...data, ...currentMessages]);
-
+            // Thêm dữ liệu mới vào đầu messageData
+            setMessageData((currentMessages) => [...data, ...currentMessages]);
         });
-    }, []);
+    }, [setMessageData]);
 
     const handleScroll = (event) => {
         const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
@@ -95,9 +94,9 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
     };
 
     const handleEmoji = (e) => {
-        setText(prev => prev + e.emoji);
+        setText((prev) => prev + e.emoji);
         setOpen(false);
-    }
+    };
 
     const handleSendMessage = () => {
         if (!text.trim()) return;
@@ -119,27 +118,26 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
         const messageWithTimestamp = {
             ...newMessage,
             name: localStorage.getItem('user').name,
-            createAt: new Date().toISOString()
+            createAt: new Date().toISOString().replace('T', ' ').replace('Z', '')
         };
 
         const updatedMessages = [messageWithTimestamp, ...messageData];
         setMessageData(updatedMessages);
 
         setText("");
-    }
+    };
 
     useEffect(() => {
         WebSocketService.registerCallback("SEND_CHAT", (data) => {
-            // Check if the message is for the selected user or from the current user
             if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
                 const newMessage = {
                     type: "people",
                     name: data.name,
                     to: data.to,
                     mes: data.mes,
-                    createAt: new Date().toISOString()
+                    createAt: data.createAt ? data.createAt.replace('T', ' ').replace('Z', '') : new Date().toISOString().replace('T', ' ').replace('Z', '')
                 };
-                setMessageData(current => {
+                setMessageData((current) => {
                     const updatedMessages = [newMessage, ...current];
                     return updatedMessages;
                 });
@@ -148,15 +146,15 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
     }, [setMessageData, selectedUser]);
 
     const messagesToShow = selectedUser
-        ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
+        ? [...messageList.filter((msg) => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
         : [];
-    console.log('data: ' + JSON.stringify(messagesToShow,null, 2))
+    console.log('data: ' + JSON.stringify(messagesToShow, null, 2));
     return (
         <div className='converse'>
             <div className="top">
                 {selectedUser && (
                     <div className="user">
-                        <img src="/avatar.png" alt=""/>
+                        <img src="/avatar.png" alt="" />
                         <div className="texts">
                             <span>{selectedUser ? selectedUser.name : ''}</span>
                         </div>
@@ -164,9 +162,9 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
                 )}
                 {selectedUser && (
                     <div className="icons">
-                        <img src="/phone.png" alt=""/>
-                        <img src="/video.png" alt=""/>
-                        <img src="/info.png" alt=""/>
+                        <img src="/phone.png" alt="" />
+                        <img src="/video.png" alt="" />
+                        <img src="/info.png" alt="" />
                     </div>
                 )}
             </div>
@@ -188,9 +186,9 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
             </div>
             <div className="bottom">
                 <div className="icons">
-                    <img src="/img.png" alt=""/>
-                    <img src="/camera.png" alt=""/>
-                    <img src="/mic.png" alt=""/>
+                    <img src="/img.png" alt="" />
+                    <img src="/camera.png" alt="" />
+                    <img src="/mic.png" alt="" />
                 </div>
                 <input
                     type="text"
@@ -199,7 +197,7 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
                     onChange={(e) => setText(e.target.value)}
                 />
                 <div className="emoji">
-                    <img src="/emoji.png" alt="" onClick={() => setOpen(prev => !prev)} />
+                    <img src="/emoji.png" alt="" onClick={() => setOpen((prev) => !prev)} />
                     <div className="picker">
                         <EmojiPicker open={open} onEmojiClick={handleEmoji} />
                     </div>
@@ -207,7 +205,7 @@ const Converse = ({selectedUser, messageData, setMessageData}) => {
                 <button className="sendButton" onClick={handleSendMessage}>Gửi</button>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Converse;

@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import "./detail.css";
 import WebSocketService from "../../WebSocketService";
-import {useDispatch, useSelector} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser } from "../../store/userSlice";
 
 import {toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -32,24 +33,29 @@ const Detail = ({setUser}) => {
             }
         });
     }, []);
+const Detail = ({ user, setUser }) => {
+    const dispatch = useDispatch();
 
     const handleLogout = () => {
         WebSocketService.sendMessage({
             action: "onchat",
-            data: {event: "LOGOUT"}
+            data: { event: "LOGOUT" },
         });
 
         if (!WebSocketService.registerCallback['AUTH']) {
             setUser({isLoggedIn: false, credentials: null});
             dispatch(setUser({isLoggedIn: false, credentials: null}));
+            dispatch(setUser({ isLoggedIn: false, credentials: null }));
             localStorage.removeItem('user');
             console.log('Logout confirmed:', 'You Logged out');
             WebSocketService.close();
+            window.location.href = '/login';
         } else {
             WebSocketService.registerCallback('AUTH', (data) => {
                 console.log('Logout confirmed:', data);
                 setUser({isLoggedIn: false, credentials: null});
                 dispatch(setUser({isLoggedIn: false, credentials: null}));
+                dispatch(setUser({ isLoggedIn: false, credentials: null }));
                 localStorage.removeItem('user');
                 WebSocketService.close();
                 window.location.href = '/login';
