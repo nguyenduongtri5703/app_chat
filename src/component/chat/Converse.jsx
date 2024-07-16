@@ -112,7 +112,8 @@ const Converse = ({ selectedUser, messageData, setMessageData, state, setState }
                 event: "SEND_CHAT",
                 data: newMessage,
             }
-        });
+        })
+        setState(true);
 
         const messageWithTimestamp = {
             ...newMessage,
