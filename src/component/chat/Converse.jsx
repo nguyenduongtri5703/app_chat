@@ -126,6 +126,12 @@ const Converse = ({ selectedUser, messageData, setMessageData, state, setState }
         setText("");
     }
 
+    const addHours = (date, hours) => {
+        const newDate = new Date(date);
+        newDate.setHours(newDate.getHours() + hours);
+        return newDate;
+    };
+
     useEffect(() => {
         WebSocketService.registerCallback("SEND_CHAT", (data) => {
             if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
@@ -145,10 +151,18 @@ const Converse = ({ selectedUser, messageData, setMessageData, state, setState }
         });
     }, [setMessageData, selectedUser, setState]);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setMessageList((prevMessages) => [...prevMessages]);
+        }, 60000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+
     const messagesToShow = selectedUser
         ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
         : [];
-
 
     return (
         <div className='converse'>
@@ -170,19 +184,22 @@ const Converse = ({ selectedUser, messageData, setMessageData, state, setState }
                 )}
             </div>
             <div className="center" onScroll={handleScroll}>
-                {messagesToShow.map((message, index) => (
-                    <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
-                        {message.name === selectedUser.name && (
-                            <img src="/avatar.png" alt="" />
-                        )}
-                        <div className="texts">
-                            <p>{message.mes}</p>
-                            <span title={new Date(message.createAt).toLocaleString()}>
-                                {formatMessageTime(message.createAt)}
-                            </span>
+                {messagesToShow.map((message, index) => {
+                    const adjustedDate = addHours(message.createAt, 7);
+                    return (
+                        <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
+                            {message.name === selectedUser.name && (
+                                <img src="/avatar.png" alt="" />
+                            )}
+                            <div className="texts">
+                                <p>{message.mes}</p>
+                                <span title={new Date(adjustedDate).toLocaleString()}>
+                                    {formatMessageTime(adjustedDate)}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
                 <div ref={endRef}></div>
             </div>
             <div className="bottom">
