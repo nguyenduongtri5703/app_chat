@@ -63,7 +63,8 @@ const WebSocketService = (() => {
         connect,
         registerCallback,
         sendMessage,
-        close
+        close,
+
     };
 
 

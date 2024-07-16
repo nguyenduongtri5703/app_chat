@@ -3,7 +3,7 @@ import EmojiPicker from "emoji-picker-react";
 import { useEffect, useRef, useState } from "react";
 import WebSocketService from "../../WebSocketService";
 
-const Converse = ({ selectedUser, messageData, setMessageData }) => {
+const Converse = ({ selectedUser, messageData, setMessageData, state, setState }) => {
     const [open, setOpen] = useState(false);
     const [text, setText] = useState("");
     const [messageList, setMessageList] = useState([]);
@@ -139,15 +139,16 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
                         }
                     }
                 });
+            } else {
+                setState(true);
             }
         });
-    }, [setMessageData, selectedUser]);
+    }, [setMessageData, selectedUser, setState]);
 
     const messagesToShow = selectedUser
         ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
         : [];
 
-    console.log('data: ' + JSON.stringify(messagesToShow, null, 2));
 
     return (
         <div className='converse'>

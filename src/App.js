@@ -14,6 +14,7 @@ function App() {
     const dispatch = useDispatch();
     const [selectedUser, setSelectedUser] = useState(null);
     const [messageData, setMessageData] = useState([]);
+    const [state, setState] = useState({})
 
     useEffect(() => {
         const savedUser = localStorage.getItem('user');
@@ -40,11 +41,15 @@ function App() {
                             setSelectedUser={setSelectedUser}
                             messageData={messageData}
                             setMessageData={setMessageData}
+                            state = {state}
+                            setState = {setState}
                         />
                         <Converse
                             selectedUser={selectedUser}
                             messageData={messageData}
                             setMessageData={setMessageData}
+                            state = {state}
+                            setState = {setState}
                         />
                         <Detail user={user.credentials}
                                 setUser={(user) => dispatch(setUser(user))}
