@@ -3,11 +3,10 @@ import { useState, useEffect } from "react";
 import AddUser from "./addUser/addUser";
 import WebSocketService from "../../../WebSocketService";
 
-const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
+const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setState }) => {
     const [addMode, setAddMode] = useState(false);
     const [userList, setUserList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [userOnline   , setUserOnline] = useState({});
 
     const handleWebSocketData = (data) => {
         setMessageData(prevMessages => {
@@ -22,16 +21,24 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                 }
             });
 
-            return updatedMessages.sort((a, b) => new Date(b.createAt) - new Date(a.createAt)); // Sort messages by createAt descending
+            return updatedMessages.sort((a, b) => new Date(b.createAt) - new Date(a.createAt)); // Sắp xếp tin nhắn theo createAt giảm dần
         });
     };
-
     useEffect(() => {
+        const fetchUserList = () => {
+            WebSocketService.sendMessage({
+                action: "onchat",
+                data: { event: "GET_USER_LIST" }
+            });
+        };
+
         WebSocketService.registerCallback('GET_USER_LIST', (data) => {
-            // Filter out the logged-in user from the user list
+            // Loại bỏ người dùng đang đăng nhập ra khỏi danh sách người dùng
             const filteredData = data.filter(u => u.name !== user.user);
             setUserList(filteredData);
-            filteredData.forEach(user => {
+
+            // Lấy tin nhắn cho tất cả người dùng
+            filteredData.forEach((user) => {
                 WebSocketService.sendMessage({
                     action: "onchat",
                     data: {
@@ -45,44 +52,58 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
             });
         });
 
-        WebSocketService.registerCallback('GET_PEOPLE_CHAT_MES', handleWebSocketData);
-        WebSocketService.sendMessage({
-            action: "onchat",
-            data: { event: "GET_USER_LIST" }
+        WebSocketService.registerCallback('GET_PEOPLE_CHAT_MES', (data) => {
+            handleWebSocketData(data);
         });
-    }, [user]);
+
+        fetchUserList();
+
+    }, [user, setMessageData]);
 
     useEffect(() => {
-        const storedMessageData = localStorage.getItem('messageData');
-        const storedUserList = localStorage.getItem('userList');
-        if (storedMessageData) {
-            setMessageData(JSON.parse(storedMessageData));
-        }
-        if (storedUserList) {
-            setUserList(JSON.parse(storedUserList));
-        }
-    }, []);
+        if (state) {
+            userList.forEach((user) => {
+                WebSocketService.sendMessage({
+                    action: "onchat",
+                    data: {
+                        event: "GET_PEOPLE_CHAT_MES",
+                        data: {
+                            name: user.name,
+                            page: 1
+                        }
+                    }
+                });
+            });
 
-    useEffect(() => {
-        const sortedUserList = [...userList].sort((a, b) => {
-            const latestMessageA = messageData.find(msg => msg.name === a.name || msg.to === a.name);
-            const latestMessageB = messageData.find(msg => msg.name === b.name || msg.to === b.name);
-            return new Date(latestMessageB?.createAt || 0) - new Date(latestMessageA?.createAt || 0);
-        });
-        setUserList(sortedUserList);
-    }, [messageData]);
+            setState(false);
+        }
+    }, [state, userList, setState]);
 
-    const getLatestMessageForUser = (userName) => {
-        const messagesForUser = messageData.filter(msg => msg.name === userName || msg.to === userName);
-        if (messagesForUser.length === 0) return '';
-        const latestMessage = messagesForUser.reduce((prev, current) => (
-            new Date(current.createAt) > new Date(prev.createAt) ? current : prev
-        ));
-        const sender = latestMessage.to === userName ? 'You: ' : '';
-        return `${sender}${latestMessage.mes}`;
+    const getLatestMessageForUser = (name) => {
+        const messagesForUser = messageData.filter(message => message.name === name || message.to === name);
+        if (messagesForUser.length > 0) {
+            // Tin nhắn mới nhất đã được sắp xếp ở đầu danh sách
+            return messagesForUser[0].mes;
+        }
+        return '';
     };
 
-    const filteredUserList = userList.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredUserList = userList.filter((u) =>
+        u.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Hiển thị thông báo khi `state` là true
+    useEffect(() => {
+        if (state) {
+            console.log("You have a new message");
+            setState(false);
+        }
+    }, [state, setState]);
+
+    const handleUserSelect = (user) => {
+        onUserSelect(user);
+        setState(false);
+    };
 
     return (
         <div className='chatList'>
@@ -104,7 +125,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData }) => {
                 />
             </div>
             {filteredUserList.map((user, index) => (
-                <div key={index} className="item" onClick={() => onUserSelect(user)}>
+                <div key={index} className="item" onClick={() => handleUserSelect(user)}>
                     <div className="avatar-container">
                         <img src="/avatar.png" alt=""/>
                     </div>

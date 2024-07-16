@@ -3,7 +3,7 @@ import EmojiPicker from "emoji-picker-react";
 import { useEffect, useRef, useState } from "react";
 import WebSocketService from "../../WebSocketService";
 
-const Converse = ({ selectedUser, messageData, setMessageData }) => {
+const Converse = ({ selectedUser, messageData, setMessageData, state, setState }) => {
     const [open, setOpen] = useState(false);
     const [text, setText] = useState("");
     const [messageList, setMessageList] = useState([]);
@@ -14,7 +14,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
     const loadMoreMessages = () => {
         if (!hasMoreMessages) return;
 
-        const nextPage = currentPage + 1; // Tính toán trang tiếp theo cần lấy
+        const nextPage = currentPage + 1;
 
         WebSocketService.sendMessage({
             action: "onchat",
@@ -38,8 +38,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
             }
             console.log("Data: " + data.length);
 
-            // Thêm dữ liệu mới vào đầu messageData
-            setMessageData((currentMessages) => [...data, ...currentMessages]);
+            setMessageData(currentMessages => [...data, ...currentMessages]);
         });
     }, [setMessageData]);
 
@@ -94,7 +93,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
     };
 
     const handleEmoji = (e) => {
-        setText((prev) => prev + e.emoji);
+        setText(prev => prev + e.emoji);
         setOpen(false);
     };
 
@@ -125,30 +124,46 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
         setMessageData(updatedMessages);
 
         setText("");
+    }
+
+    const addHours = (date, hours) => {
+        const newDate = new Date(date);
+        newDate.setHours(newDate.getHours() + hours);
+        return newDate;
     };
 
     useEffect(() => {
         WebSocketService.registerCallback("SEND_CHAT", (data) => {
             if (selectedUser && (data.name === selectedUser.name || data.name === localStorage.getItem('user').name)) {
-                const newMessage = {
-                    type: "people",
-                    name: data.name,
-                    to: data.to,
-                    mes: data.mes,
-                    createAt: data.createAt ? data.createAt.replace('T', ' ').replace('Z', '') : new Date().toISOString().replace('T', ' ').replace('Z', '')
-                };
-                setMessageData((current) => {
-                    const updatedMessages = [newMessage, ...current];
-                    return updatedMessages;
+                WebSocketService.sendMessage({
+                    action: "onchat",
+                    data: {
+                        event: "GET_PEOPLE_CHAT_MES",
+                        data: {
+                            name: selectedUser.name,
+                            page: 1
+                        }
+                    }
                 });
+            } else {
+                setState(true);
             }
         });
-    }, [setMessageData, selectedUser]);
+    }, [setMessageData, selectedUser, setState]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setMessageList((prevMessages) => [...prevMessages]);
+        }, 60000);
+
+        return () => clearInterval(interval);
+    }, []);
+
 
     const messagesToShow = selectedUser
-        ? [...messageList.filter((msg) => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
+        ? [...messageList.filter(msg => msg.name === selectedUser.name || msg.to === selectedUser.name)].reverse()
         : [];
-    console.log('data: ' + JSON.stringify(messagesToShow, null, 2));
+
     return (
         <div className='converse'>
             <div className="top">
@@ -169,19 +184,22 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
                 )}
             </div>
             <div className="center" onScroll={handleScroll}>
-                {messagesToShow.map((message, index) => (
-                    <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
-                        {message.name === selectedUser.name && (
-                            <img src="/avatar.png" alt="" />
-                        )}
-                        <div className="texts">
-                            <p>{message.mes}</p>
-                            <span title={new Date(message.createAt).toLocaleString()}>
-                                {formatMessageTime(message.createAt)}
-                            </span>
+                {messagesToShow.map((message, index) => {
+                    const adjustedDate = addHours(message.createAt, 7);
+                    return (
+                        <div key={index} className={`message ${message.name === selectedUser.name ? "" : "own"}`}>
+                            {message.name === selectedUser.name && (
+                                <img src="/avatar.png" alt="" />
+                            )}
+                            <div className="texts">
+                                <p>{message.mes}</p>
+                                <span title={new Date(adjustedDate).toLocaleString()}>
+                                    {formatMessageTime(adjustedDate)}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
                 <div ref={endRef}></div>
             </div>
             <div className="bottom">
@@ -197,7 +215,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
                     onChange={(e) => setText(e.target.value)}
                 />
                 <div className="emoji">
-                    <img src="/emoji.png" alt="" onClick={() => setOpen((prev) => !prev)} />
+                    <img src="/emoji.png" alt="" onClick={() => setOpen(prev => !prev)} />
                     <div className="picker">
                         <EmojiPicker open={open} onEmojiClick={handleEmoji} />
                     </div>
@@ -205,7 +223,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
                 <button className="sendButton" onClick={handleSendMessage}>Gửi</button>
             </div>
         </div>
-    );
-};
+    )
+}
 
 export default Converse;
