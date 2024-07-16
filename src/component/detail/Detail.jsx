@@ -56,7 +56,42 @@ const Detail = ({ user, setUser }) => {
         }
     };
 
-   const handleJoinRoom = () => {
+    const handleCreateRoom = () => {
+        if (!roomName.trim()) {
+            toast.error("Không được để trống tên group");
+            return;
+        }
+        const message = {
+            action: "onchat",
+            data: {
+                event: "CREATE_ROOM",
+                data: {
+                    name: roomName
+                }
+            }
+        };
+        WebSocketService.sendMessage(message);
+    };
+
+    const handleJoinRoom = () => {
+        if (!joinRoomName.trim()) {
+            toast.error("Không được để trống tên group");
+            return;
+        }
+
+        const joinMessage = {
+            action: "onchat",
+            data: {
+                event: "JOIN_ROOM",
+                data: {
+                    name: joinRoomName
+                }
+            }
+        };
+
+    let messageSent = false;
+
+    const handleJoinRoom = () => {
         if (!joinRoomName.trim()) {
             toast.error("Không được để trống tên group");
             return;
@@ -91,7 +126,6 @@ const Detail = ({ user, setUser }) => {
             messageSent = true;
         }
     };
-    
 
     const handleRoomCreationSuccess = (data) => {
         console.log('Room created successfully:', data);
