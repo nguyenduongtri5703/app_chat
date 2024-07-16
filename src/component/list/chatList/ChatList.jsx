@@ -8,6 +8,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
     const [userList, setUserList] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
+    // Cập nhật thông tin messageData
     const handleWebSocketData = (data) => {
         setMessageData(prevMessages => {
             const updatedMessages = [...prevMessages];
@@ -23,6 +24,9 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
 
             return updatedMessages.sort((a, b) => new Date(b.createAt) - new Date(a.createAt)); // Sắp xếp tin nhắn theo createAt giảm dần
         });
+
+        // Sau khi cập nhật tin nhắn, gọi fetchUserList để lấy lại danh sách người dùng
+        fetchUserList();
     };
 
     const fetchUserList = useCallback(() => {
@@ -54,15 +58,24 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
         });
 
         WebSocketService.registerCallback('GET_PEOPLE_CHAT_MES', (data) => {
+            WebSocketService.sendMessage({
+                action: "onchat",
+                data: { event: "GET_USER_LIST" }
+            });
             handleWebSocketData(data);
         });
 
         fetchUserList();
     }, [user, setMessageData, fetchUserList]);
 
+
     useEffect(() => {
         if (state) {
             userList.forEach((user) => {
+                WebSocketService.sendMessage({
+                    action: "onchat",
+                    data: { event: "GET_USER_LIST" }
+                });
                 WebSocketService.sendMessage({
                     action: "onchat",
                     data: {
@@ -74,18 +87,24 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
                     }
                 });
             });
-
             setState(false);
         }
     }, [state, userList, setState]);
 
-    const getLatestMessageForUser = (name) => {
-        const messagesForUser = messageData.filter(message => message.name === name || message.to === name);
-        if (messagesForUser.length > 0) {
-            // Tin nhắn mới nhất đã được sắp xếp ở đầu danh sách
-            return messagesForUser[0].mes;
-        }
-        return '';
+
+    // Lấy message mới nhất từ người dùng cụ thể
+    const getLatestMessageForUser = (userName) => {
+        const messagesForUser = messageData.filter(msg => msg.name === userName || msg.to === userName);
+
+        if (messagesForUser.length === 0) return '';
+
+        // Lấy tin nhắn mới nhất
+        const latestMessage = messagesForUser.reduce((prev, current) => (
+            new Date(current.createAt) > new Date(prev.createAt) ? current : prev
+        ));
+
+        const sender = latestMessage.to === userName ? 'You: ' : '';
+        return `${sender}${latestMessage.mes}`;
     };
 
     const filteredUserList = userList.filter((u) =>
@@ -104,6 +123,13 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
         onUserSelect(user);
         setState(false);
     };
+
+    // Sắp xếp danh sách user theo tin nhắn mới nhất
+    filteredUserList.sort((a, b) => {
+        const latestMessageA = getLatestMessageForUser(a.name);
+        const latestMessageB = getLatestMessageForUser(b.name);
+        return new Date(latestMessageB.createAt) - new Date(latestMessageA.createAt);
+    });
 
     return (
         <div className='chatList'>
