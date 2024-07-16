@@ -1,5 +1,5 @@
 import "./chatList.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AddUser from "./addUser/addUser";
 import WebSocketService from "../../../WebSocketService";
 
@@ -24,14 +24,15 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
             return updatedMessages.sort((a, b) => new Date(b.createAt) - new Date(a.createAt)); // Sắp xếp tin nhắn theo createAt giảm dần
         });
     };
-    useEffect(() => {
-        const fetchUserList = () => {
-            WebSocketService.sendMessage({
-                action: "onchat",
-                data: { event: "GET_USER_LIST" }
-            });
-        };
 
+    const fetchUserList = useCallback(() => {
+        WebSocketService.sendMessage({
+            action: "onchat",
+            data: { event: "GET_USER_LIST" }
+        });
+    }, []);
+
+    useEffect(() => {
         WebSocketService.registerCallback('GET_USER_LIST', (data) => {
             // Loại bỏ người dùng đang đăng nhập ra khỏi danh sách người dùng
             const filteredData = data.filter(u => u.name !== user.user);
@@ -57,8 +58,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
         });
 
         fetchUserList();
-
-    }, [user, setMessageData]);
+    }, [user, setMessageData, fetchUserList]);
 
     useEffect(() => {
         if (state) {
@@ -92,7 +92,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
         u.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Hiển thị thông báo khi `state` là true
+    // Hiển thị thông báo khi state là true
     useEffect(() => {
         if (state) {
             console.log("You have a new message");
@@ -135,7 +135,7 @@ const ChatList = ({ user, onUserSelect, messageData, setMessageData, state, setS
                     </div>
                 </div>
             ))}
-            {addMode && <AddUser userList={userList} />}
+            {addMode && <AddUser userList={userList} fetchUserList={fetchUserList} />}
         </div>
     );
 };
