@@ -100,12 +100,20 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
 
     const handleSendMessage = () => {
         if (!text.trim()) return;
-
-        const newMessage = {
-            type: "people",
-            to: selectedUser.name,
-            mes: text,
-        };
+        let newMessage;
+        if (selectedUser.name.endsWith('Nhom') || selectedUser.name.startsWith('Nhom')) {
+            newMessage = {
+                type: "room",
+                to: selectedUser.name,
+                mes: text,
+            };
+        } else {
+            newMessage = {
+                type: "people",
+                to: selectedUser.name,
+                mes: text,
+            };
+        }
 
         WebSocketService.sendMessage({
             action: "onchat",
@@ -117,7 +125,7 @@ const Converse = ({ selectedUser, messageData, setMessageData }) => {
 
         const messageWithTimestamp = {
             ...newMessage,
-            name: localStorage.getItem('user').name,
+            name: JSON.parse(localStorage.getItem('user')).name,
             createAt: new Date().toISOString().replace('T', ' ').replace('Z', '')
         };
 

@@ -73,6 +73,8 @@ const Detail = ({ user, setUser }) => {
         WebSocketService.sendMessage(message);
     };
 
+    let messageSent = false;
+
     const handleJoinRoom = () => {
         if (!joinRoomName.trim()) {
             toast.error("Không được để trống tên group");
@@ -89,32 +91,24 @@ const Detail = ({ user, setUser }) => {
             }
         };
 
-        const chatMessageRoom = {
-            action: "onchat",
-            data: {
-                event: "SEND_CHAT",
-                data: {
-                    type: "room",
-                    to: joinRoomName,
-                    mes: "Xin chào nhóm " + joinRoomName
-                }
-            }
-        };
-
-        const chatMessagePeople = {
-            action: "onchat",
-            data: {
-                event: "SEND_CHAT",
-                data: {
-                    type: "people",
-                    to: joinRoomName,
-                    mes: "Xin chào nhóm " + joinRoomName
-                }
-            }
-        };
         WebSocketService.sendMessage(joinMessage);
-        WebSocketService.sendMessage(chatMessageRoom);
-        WebSocketService.sendMessage(chatMessagePeople);
+
+        if (!messageSent) {
+            const chatMessageRoom = {
+                action: "onchat",
+                data: {
+                    event: "SEND_CHAT",
+                    data: {
+                        type: "room",
+                        to: joinRoomName,
+                        mes: "Xin chào nhóm " + joinRoomName
+                    }
+                }
+            };
+
+            WebSocketService.sendMessage(chatMessageRoom);
+            messageSent = true;
+        }
     };
 
     const handleRoomCreationSuccess = (data) => {
