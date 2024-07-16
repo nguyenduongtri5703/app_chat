@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './addUser.css';
 import WebSocketService from "../../../../WebSocketService";
 
-const AddUser = ({ userList }) => {
+const AddUser = ({ userList, fetchUserList }) => {
     const [username, setUsername] = useState('');
 
     const handleAddUser = (event) => {
@@ -21,9 +21,10 @@ const AddUser = ({ userList }) => {
             }
         });
 
-        console.log(`Sending chat message to user: ${username}`); // Add console log
+        console.log(`Sending chat message to user: ${username}`);
 
-        setUsername(''); // Clear input after sending message
+        setUsername('');
+        fetchUserList();
     };
 
     return (

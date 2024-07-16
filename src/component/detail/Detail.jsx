@@ -56,26 +56,7 @@ const Detail = ({ user, setUser }) => {
         }
     };
 
-    const handleCreateRoom = () => {
-        if (!roomName.trim()) {
-            toast.error("Không được để trống tên group");
-            return;
-        }
-        const message = {
-            action: "onchat",
-            data: {
-                event: "CREATE_ROOM",
-                data: {
-                    name: roomName
-                }
-            }
-        };
-        WebSocketService.sendMessage(message);
-    };
-
-    let messageSent = false;
-
-    const handleJoinRoom = () => {
+   const handleJoinRoom = () => {
         if (!joinRoomName.trim()) {
             toast.error("Không được để trống tên group");
             return;
@@ -110,6 +91,7 @@ const Detail = ({ user, setUser }) => {
             messageSent = true;
         }
     };
+    
 
     const handleRoomCreationSuccess = (data) => {
         console.log('Room created successfully:', data);
@@ -135,7 +117,7 @@ const Detail = ({ user, setUser }) => {
         <div className='detail'>
             <div className="user" style={{paddingBottom: '0px'}}>
                 <img src="/avatar.png" alt=""/>
-                <h2>{user.user || 'Dương Trí Nguyên'}</h2>
+                <h2>{''}</h2>
                 <p>NLUer</p>
                 <div className="search">
                     <div className="add" onClick={() => setShowCreateRoom(!showCreateRoom)}>

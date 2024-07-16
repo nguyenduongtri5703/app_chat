@@ -89,7 +89,8 @@ const WebSocketService = (() => {
         registerRoomCreationCallback,
         registerRoomJoinCallback,
         sendMessage,
-        close
+        close,
+
     };
 })();
 
