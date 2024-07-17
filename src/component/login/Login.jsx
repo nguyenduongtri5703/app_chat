@@ -11,6 +11,7 @@ const Login = ({ setUser }) => {
         WebSocketService.registerCallback('LOGIN', (data) => {
             console.log('Login response:', data);
             if (data.RE_LOGIN_CODE) {
+
                 const userData = {
                     isLoggedIn: true,
                     credentials: {
